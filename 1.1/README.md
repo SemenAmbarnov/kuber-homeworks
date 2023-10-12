@@ -70,7 +70,8 @@ microk8s kubectl port-forward -n kube-system service/kubernetes-dashboard 10443:
 ```
 Теперь можем подключиться по https://127.0.0.1:10443 к дашборду
 
-![image](https://github.com/SemenAmbarnov/kuber-homeworks/assets/92155007/fb2a9540-a647-481a-b941-de4583e03fe9)
+![image](https://github.com/SemenAmbarnov/kuber-homeworks/assets/92155007/f97e28b7-2ba0-4c49-b6d4-ce129b790ce5)
+
 
 В файле **/var/snap/microk8s/current/certs/csr.conf.template** уже прописан IP, он же высвечивается у нас как Cluster IP
 ```
@@ -84,6 +85,9 @@ IP.1 = 127.0.0.1
 IP.2 = 10.152.183.1
 #MOREIPS
 ```
+
+![image](https://github.com/SemenAmbarnov/kuber-homeworks/assets/92155007/1af5989c-2c7c-4373-9e6a-dadda86554b7)
+
 
 
 
