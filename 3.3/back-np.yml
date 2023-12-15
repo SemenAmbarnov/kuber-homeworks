@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: netology-back
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - {key: app, operator: In, values: [netology-front, netology-cache]}
+  egress:
+    - to:
+        - podSelector:
+            matchExpressions:
+              - {key: app, operator: In, values: [netology-front, netology-cache]}
