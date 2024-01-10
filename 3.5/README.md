@@ -120,7 +120,83 @@ kubectl logs -n web web-consumer-7c589bc659-mbhk5
 100   612  100   612    0     0   101k      0 --:--:-- --:--:-- --:--:--  119k
 <!DOCTYPE html>
 <html>
+
 <head>
 <title>Welcome to nginx!</title>
 ```
 В логах мы видим, что доступ к сервису появился, проблема решена
+
+
+# Доработка. 
+
+Варианты исправления :
+1. Поменять namespace в Deployment web-consumer на data
+2. Использовать тип селектора ExternalName, но согласно доке https://kubernetes.io/docs/concepts/services-networking/service/ есть некоторые нюансы:  
+
+Предупреждение:
+У вас могут возникнуть проблемы с использованием ExternalName для некоторых распространенных протоколов, включая HTTP и HTTPS. Если вы используете ExternalName, то имя хоста, используемое клиентами внутри вашего кластера, отличается от имени, на которое ссылается ExternalName.
+Для протоколов, использующих имена хостов, это различие может привести к ошибкам или неожиданным ответам. HTTP-запросы будут иметь Host:заголовок, который исходный сервер не распознает; Серверы TLS не смогут предоставить сертификат, соответствующий имени хоста, к которому подключен клиент.
+
+Через ExternalName у меня не получилось реализовать, по выше озвученной причине.
+Кластер ip заменяется на external ip, но проблема остаётся
+
+Поэтому исправим namespace в Deployment web-consumer на data   
+```bash
+sam@netology:~$ sed 's/namespace: web/namespace: data/' task.yaml >> deployment.yaml
+sam@netology:~$ diff task.yaml deployment.yaml 
+5c5
+<   namespace: web
+---
+>   namespace: data
+```
+
+Создадим namespace data, применим 2 deployment'а и service из файла deployment.yaml:    
+```bash 
+sam@netology:~$ kubectl create ns data
+namespace/data created
+sam@netology:~$ kubectl get ns
+NAME              STATUS   AGE
+data              Active   9s
+default           Active   4h13m
+kube-node-lease   Active   4h13m
+kube-public       Active   4h13m
+kube-system       Active   4h13m
+sam@netology:~$ kubectl apply -f deployment.yaml 
+deployment.apps/web-consumer created
+deployment.apps/auth-db created
+service/auth-db created
+```
+Проверим что все работает:
+```bash
+sam@netology:~$$ kubectl -n data get pods
+NAME                            READY   STATUS    RESTARTS   AGE
+auth-db-795c96cddc-2hfv7        1/1     Running   0          6m53s
+web-consumer-577d47b97d-lbm9r   1/1     Running   0          6m53s
+web-consumer-577d47b97d-sgtwm   1/1     Running   0          6m53s
+sam@netology:~$ kubectl -n data get svc
+NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+auth-db   ClusterIP   10.233.26.139   <none>        80/TCP    6m58s
+sam@netology:~$ kubectl -n data get endpoints
+NAME      ENDPOINTS         AGE
+auth-db   10.233.71.13:80   7m7s
+```
+Посмотрим, что пишет busyboxplus:curl в логи:  
+```bash
+sam@netology:~$ kubectl -n data logs --tail=15 pods/web-consumer-577d47b97d-lbm9r
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
