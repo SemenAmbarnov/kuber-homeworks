@@ -200,3 +200,43 @@ Commercial support is available at
 </html>
 ```
 
+# Доработка 2
+
+Понял наконец в чём дело.
+Добавил в манифесте к команде curl имя неймспейса. Получилось команда вида - while true; do curl auth-db.web; sleep 5; done. И команда стала отрабатывать как нужно.
+
+```
+sam@netology:~$ microk8s kubectl logs web-consumer-5769f9f766-x22w6 -n web
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   612  100   612    0     0   7703      0 --:--:-- --:--:-- --:--:--  597k
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+```
+
+
+
